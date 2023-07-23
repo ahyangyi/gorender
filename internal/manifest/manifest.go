@@ -37,6 +37,7 @@ type Sprite struct {
 type Manifest struct {
 	LightingAngle             int              `json:"lighting_angle"`
 	LightingElevation         int              `json:"lighting_elevation"`
+	LightingWeight            float64          `json:"lighting_weight"`
 	Size                      geometry.Vector3 `json:"size"`
 	RenderElevationAngle      int              `json:"render_elevation"`
 	Sprites                   []Sprite         `json:"sprites"`
@@ -71,6 +72,7 @@ func FromJson(handle io.Reader) (manifest Manifest, err error) {
 	// Set defaults
 	manifest.Accuracy = 2
 	manifest.EdgeThreshold = 0.5
+	manifest.LightingWeight = 1.0
 
 	data, err := ioutil.ReadAll(handle)
 
