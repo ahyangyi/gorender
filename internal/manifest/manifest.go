@@ -2,9 +2,9 @@ package manifest
 
 import (
 	"encoding/json"
-	"github.com/mattkimber/gorender/internal/colour"
-	"github.com/mattkimber/gorender/internal/geometry"
-	"github.com/mattkimber/gorender/internal/voxelobject"
+	"github.com/ahyangyi/gorender/internal/colour"
+	"github.com/ahyangyi/gorender/internal/geometry"
+	"github.com/ahyangyi/gorender/internal/voxelobject"
 	"io"
 	"math"
 )

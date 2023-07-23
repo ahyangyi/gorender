@@ -2,8 +2,8 @@ package voxelobject
 
 import (
 	"github.com/mattkimber/gandalf/magica"
-	"github.com/mattkimber/gorender/internal/colour"
-	"github.com/mattkimber/gorender/internal/geometry"
+	"github.com/ahyangyi/gorender/internal/colour"
+	"github.com/ahyangyi/gorender/internal/geometry"
 	"log"
 	"sync"
 )

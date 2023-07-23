@@ -1,9 +1,9 @@
 package sprite
 
 import (
-	"github.com/mattkimber/gorender/internal/colour"
-	"github.com/mattkimber/gorender/internal/manifest"
-	"github.com/mattkimber/gorender/internal/raycaster"
+	"github.com/ahyangyi/gorender/internal/colour"
+	"github.com/ahyangyi/gorender/internal/manifest"
+	"github.com/ahyangyi/gorender/internal/raycaster"
 	"math"
 	"sort"
 )
