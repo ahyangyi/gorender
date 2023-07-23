@@ -1,7 +1,7 @@
 package sprite
 
 import (
-	"github.com/mattkimber/gorender/internal/colour"
+	"github.com/ahyangyi/gorender/internal/colour"
 	"image"
 	"image/color"
 )

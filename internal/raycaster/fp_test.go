@@ -1,7 +1,7 @@
 package raycaster
 
 import (
-	"github.com/mattkimber/gorender/internal/geometry"
+	"github.com/ahyangyi/gorender/internal/geometry"
 	"testing"
 )
 
