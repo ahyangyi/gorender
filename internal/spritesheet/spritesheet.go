@@ -1,13 +1,13 @@
 package spritesheet
 
 import (
-	"github.com/mattkimber/gorender/internal/manifest"
-	"github.com/mattkimber/gorender/internal/raycaster"
-	"github.com/mattkimber/gorender/internal/sampler"
-	"github.com/mattkimber/gorender/internal/sprite"
-	"github.com/mattkimber/gorender/internal/utils/fileutils"
-	"github.com/mattkimber/gorender/internal/utils/imageutils"
-	"github.com/mattkimber/gorender/internal/utils/timingutils"
+	"github.com/ahyangyi/gorender/internal/manifest"
+	"github.com/ahyangyi/gorender/internal/raycaster"
+	"github.com/ahyangyi/gorender/internal/sampler"
+	"github.com/ahyangyi/gorender/internal/sprite"
+	"github.com/ahyangyi/gorender/internal/utils/fileutils"
+	"github.com/ahyangyi/gorender/internal/utils/imageutils"
+	"github.com/ahyangyi/gorender/internal/utils/timingutils"
 	"image"
 	"image/color"
 	"image/png"

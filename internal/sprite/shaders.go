@@ -1,10 +1,10 @@
 package sprite
 
 import (
-	"github.com/mattkimber/gorender/internal/colour"
-	"github.com/mattkimber/gorender/internal/geometry"
-	"github.com/mattkimber/gorender/internal/manifest"
-	"github.com/mattkimber/gorender/internal/raycaster"
+	"github.com/ahyangyi/gorender/internal/colour"
+	"github.com/ahyangyi/gorender/internal/geometry"
+	"github.com/ahyangyi/gorender/internal/manifest"
+	"github.com/ahyangyi/gorender/internal/raycaster"
 )
 
 func Colour(smp raycaster.RenderSample, d *manifest.Definition, resolveSpecialColours bool, influence float64) colour.RGB {

@@ -1,7 +1,7 @@
 package sampler
 
 import (
-	"github.com/mattkimber/gorender/internal/geometry"
+	"github.com/ahyangyi/gorender/internal/geometry"
 	"image"
 	"image/color"
 	"image/draw"
