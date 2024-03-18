@@ -6,9 +6,9 @@ import (
 	"math"
 )
 
-func castFpRay(object voxelobject.ProcessedVoxelObject, loc0 geometry.Vector3, loc geometry.Vector3, ray geometry.Vector3, limits geometry.Vector3, flipY bool) (result RayResult) {
-	if collision, loc, approachedBB := castRayToCandidate(object, loc, ray, limits, flipY); collision {
-		lx, ly, lz, isRecovered := recoverNonSurfaceVoxel(object, loc, ray, limits, flipY)
+func castFpRay(object voxelobject.ProcessedVoxelObject, loc0 geometry.Vector3, loc geometry.Vector3, ray geometry.Vector3, limits geometry.Vector3) (result RayResult) {
+	if collision, loc, approachedBB := castRayToCandidate(object, loc, ray, limits); collision {
+		lx, ly, lz, isRecovered := recoverNonSurfaceVoxel(object, loc, ray, limits)
 		return RayResult{
 			X:                     lx,
 			Y:                     ly,
@@ -25,9 +25,8 @@ func castFpRay(object voxelobject.ProcessedVoxelObject, loc0 geometry.Vector3, l
 	return
 }
 
-func castRayToCandidate(object voxelobject.ProcessedVoxelObject, loc geometry.Vector3, ray geometry.Vector3, limits geometry.Vector3, flipY bool) (bool, geometry.Vector3, bool) {
+func castRayToCandidate(object voxelobject.ProcessedVoxelObject, loc geometry.Vector3, ray geometry.Vector3, limits geometry.Vector3) (bool, geometry.Vector3, bool) {
 	i, fi := 0, 0.0
-	bSizeY := object.Size.Y - 1
 	loc0 := loc
 	approachedBB := false
 
@@ -40,10 +39,6 @@ func castRayToCandidate(object voxelobject.ProcessedVoxelObject, loc geometry.Ve
 		if isInsideBoundingVolume(loc, limits) {
 			approachedBB = true
 			lx, ly, lz := int(loc.X), int(loc.Y), int(loc.Z)
-
-			if flipY {
-				ly = bSizeY - ly
-			}
 
 			if object.Elements[lx][ly][lz].Index != 0 {
 				return true, loc, approachedBB
@@ -62,14 +57,9 @@ func castRayToCandidate(object voxelobject.ProcessedVoxelObject, loc geometry.Ve
 
 // Attempt to recover a non-surface voxel by taking a more DDA-like approach where we trace backward up the ray
 // starting with X, then Y, then Z, then repeat until we find a surface voxel or bail.
-func recoverNonSurfaceVoxel(object voxelobject.ProcessedVoxelObject, loc geometry.Vector3, ray geometry.Vector3, limits geometry.Vector3, flipY bool) (lx int, ly int, lz int, isRecovered bool) {
-
-	bSizeY := object.Size.Y - 1
+func recoverNonSurfaceVoxel(object voxelobject.ProcessedVoxelObject, loc geometry.Vector3, ray geometry.Vector3, limits geometry.Vector3) (lx int, ly int, lz int, isRecovered bool) {
 
 	lx, ly, lz = int(loc.X), int(loc.Y), int(loc.Z)
-	if flipY {
-		ly = bSizeY - ly
-	}
 
 	if isInsideBoundingVolume(loc, limits) && object.Elements[lx][ly][lz].IsSurface {
 		return
@@ -87,9 +77,6 @@ func recoverNonSurfaceVoxel(object voxelobject.ProcessedVoxelObject, loc geometr
 
 	for i := 0; i < 10; i++ {
 		lx, ly, lz = int(loc.X), int(loc.Y), int(loc.Z)
-		if flipY {
-			ly = bSizeY - ly
-		}
 
 		for j := 0; j < 3; j++ {
 
@@ -141,10 +128,6 @@ func recoverNonSurfaceVoxel(object voxelobject.ProcessedVoxelObject, loc geometr
 	}
 
 	lx, ly, lz = int(loc0.X), int(loc0.Y), int(loc0.Z)
-
-	if flipY {
-		ly = bSizeY - ly
-	}
 
 	return
 }
