@@ -51,9 +51,7 @@ func Test_castFpRay(t *testing.T) {
 	ray := geometry.Vector3{X: -1, Y: 0, Z: -0.125}.Normalise()
 	loc := geometry.Vector3{X: 8, Y: 2, Z: 3}
 
-	testFpResult(t, castFpRay(object, loc, loc, ray, limits, false), 2)
-	testFpResult(t, castFpRay(object, loc, loc, ray, limits, true), 1)
-
+	testFpResult(t, castFpRay(object, loc, loc, ray, limits), 2)
 }
 
 func testFpResult(t *testing.T, result RayResult, expectedY int) {
