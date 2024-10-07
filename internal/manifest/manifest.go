@@ -43,6 +43,7 @@ type Manifest struct {
 	Sprites                   []Sprite         `json:"sprites"`
 	DepthInfluence            float64          `json:"depth_influence"`
 	TiledNormals              bool             `json:"tiled_normals"`
+	TilingMode                string           `json:"tiling_mode"`
 	SolidBase                 bool             `json:"solid_base"`
 	SoftenEdges               float64          `json:"soften_edges"`
 	Accuracy                  int              `json:"accuracy"`
@@ -75,6 +76,7 @@ func FromJson(handle io.Reader) (manifest Manifest, err error) {
 	manifest.EdgeThreshold = 0.5
 	manifest.LightingWeight = 1.0
 	manifest.ZScale = 1.0
+	manifest.TilingMode = "normal"
 
 	data, err := ioutil.ReadAll(handle)
 
