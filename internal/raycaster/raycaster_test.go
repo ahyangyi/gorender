@@ -1,12 +1,12 @@
 package raycaster
 
 import (
-	"github.com/mattkimber/gandalf/magica"
 	"github.com/ahyangyi/gorender/internal/colour"
 	"github.com/ahyangyi/gorender/internal/geometry"
 	"github.com/ahyangyi/gorender/internal/manifest"
 	"github.com/ahyangyi/gorender/internal/sampler"
 	"github.com/ahyangyi/gorender/internal/voxelobject"
+	"github.com/mattkimber/gandalf/magica"
 	"testing"
 )
 
