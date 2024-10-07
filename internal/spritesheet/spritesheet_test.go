@@ -1,7 +1,6 @@
 package spritesheet
 
 import (
-	"github.com/mattkimber/gandalf/magica"
 	"github.com/ahyangyi/gorender/internal/colour"
 	"github.com/ahyangyi/gorender/internal/geometry"
 	"github.com/ahyangyi/gorender/internal/manifest"
@@ -10,6 +9,7 @@ import (
 	"github.com/ahyangyi/gorender/internal/sprite"
 	"github.com/ahyangyi/gorender/internal/utils/imageutils"
 	"github.com/ahyangyi/gorender/internal/voxelobject"
+	"github.com/mattkimber/gandalf/magica"
 	"image"
 	"os"
 	"testing"

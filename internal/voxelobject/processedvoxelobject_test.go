@@ -1,9 +1,9 @@
 package voxelobject
 
 import (
-	"github.com/mattkimber/gandalf/magica"
 	"github.com/ahyangyi/gorender/internal/colour"
 	"github.com/ahyangyi/gorender/internal/geometry"
+	"github.com/mattkimber/gandalf/magica"
 	"testing"
 )
 
