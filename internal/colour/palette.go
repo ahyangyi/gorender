@@ -32,6 +32,9 @@ type Palette struct {
 	CompanyColourLightingContribution float64        `json:"company_colour_lighting_contribution"`
 	DefaultBrightness                 float64        `json:"default_brightness"`
 	CompanyColourLightingScale        float64        `json:"company_colour_lighting_scale"`
+	OtherColourLightingScale          float64        `json:"other_colour_lighting_scale"`
+	CompanyColourLightingOffset       float64        `json:"company_colour_lighting_offset"`
+	OtherColourLightingOffset         float64        `json:"other_colour_lighting_offset"`
 }
 
 func (pe *PaletteEntry) GetRGB() (output RGB) {
@@ -209,7 +212,9 @@ func (p Palette) GetLitRGB(index byte, l float64, lighting_weight float64, brigh
 
 	entry := p.Entries[index]
 	if resolveSpecialColours && entry.Range != nil && (entry.Range.IsPrimaryCompanyColour || entry.Range.IsSecondaryCompanyColour) {
-		l = l * p.CompanyColourLightingScale
+		l = l*p.CompanyColourLightingScale + p.CompanyColourLightingOffset
+	} else {
+		l = l*p.OtherColourLightingScale + p.OtherColourLightingOffset
 	}
 
 	l = (l+1)*lighting_weight - 1
@@ -272,6 +277,10 @@ func FromJson(handle io.Reader) (p Palette, err error) {
 
 	if err := p.SetRanges(p.Ranges); err != nil {
 		return Palette{}, err
+	}
+
+	if p.OtherColourLightingScale == 0 {
+		p.OtherColourLightingScale = 1.0
 	}
 
 	return
