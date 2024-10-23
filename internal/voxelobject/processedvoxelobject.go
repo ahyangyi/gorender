@@ -279,21 +279,33 @@ func (p *ProcessedVoxelObject) applySlope(x, y, z int, normal geometry.Vector3, 
 		if x < y {
 			normal.X += slope * normal.Z
 			normal.Y -= slope * normal.Z
+		} else if x == y {
+			normal.X += slope * normal.Z / 2
+			normal.Y -= slope * normal.Z / 2
 		}
 	case 2:
 		if x+y < N-1 {
 			normal.X += slope * normal.Z
 			normal.Y += slope * normal.Z
+		} else if x+y == N-1 {
+			normal.X += slope * normal.Z / 2
+			normal.Y += slope * normal.Z / 2
 		}
 	case 4:
 		if x > y {
 			normal.X -= slope * normal.Z
 			normal.Y += slope * normal.Z
+		} else if x == y {
+			normal.X -= slope * normal.Z / 2
+			normal.Y += slope * normal.Z / 2
 		}
 	case 8:
 		if x+y > N-1 {
 			normal.X -= slope * normal.Z
 			normal.Y -= slope * normal.Z
+		} else if x+y == N-1 {
+			normal.X -= slope * normal.Z / 2
+			normal.Y -= slope * normal.Z / 2
 		}
 	case 5:
 		if x < y {
@@ -324,21 +336,33 @@ func (p *ProcessedVoxelObject) applySlope(x, y, z int, normal geometry.Vector3, 
 		if x+y > N-1 {
 			normal.X += slope * normal.Z
 			normal.Y += slope * normal.Z
+		} else if x+y == N-1 {
+			normal.X += slope * normal.Z / 2
+			normal.Y += slope * normal.Z / 2
 		}
 	case 11:
 		if x > y {
 			normal.X += slope * normal.Z
 			normal.Y -= slope * normal.Z
+		} else if x == y {
+			normal.X += slope * normal.Z / 2
+			normal.Y -= slope * normal.Z / 2
 		}
 	case 13:
 		if x+y < N-1 {
 			normal.X -= slope * normal.Z
 			normal.Y -= slope * normal.Z
+		} else if x+y == N-1 {
+			normal.X -= slope * normal.Z / 2
+			normal.Y -= slope * normal.Z / 2
 		}
 	case 14:
 		if x < y {
 			normal.X -= slope * normal.Z
 			normal.Y += slope * normal.Z
+		} else if x == y {
+			normal.X -= slope * normal.Z / 2
+			normal.Y += slope * normal.Z / 2
 		}
 	case 23:
 		normal.X += slope * normal.Z
