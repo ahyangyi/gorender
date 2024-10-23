@@ -59,6 +59,13 @@ func GetRaycastOutput(object voxelobject.ProcessedVoxelObject, m manifest.Manife
 
 	viewport := getViewportPlane(spr.Angle, m, spr.ZError, size, float64(spr.RenderElevationAngle))
 	ray := geometry.Zero().Subtract(getRenderDirection(spr.Angle, float64(spr.RenderElevationAngle)))
+	if spr.Flip {
+		ray.Y = -ray.Y
+		viewport.A.Y = float64(size.Y) - viewport.A.Y
+		viewport.B.Y = float64(size.Y) - viewport.B.Y
+		viewport.C.Y = float64(size.Y) - viewport.C.Y
+		viewport.D.Y = float64(size.Y) - viewport.D.Y
+	}
 
 	lighting := getLightingDirection(spr.Angle+float64(m.LightingAngle), float64(m.LightingElevation), spr.Flip)
 	result := make(RenderOutput, len(sampler))
@@ -115,7 +122,7 @@ func raycastSamples(
 		loc0.Z += joggle
 		loc := getIntersectionWithBounds(loc0, ray, limits)
 
-		rayResult := castFpRay(object, loc0, loc, ray, limits, spr.Flip, m.Slope, m.SlopeType)
+		rayResult := castFpRay(object, loc0, loc, ray, limits, m.Slope, m.SlopeType)
 
 		if rayResult.HasGeometry && rayResult.X >= minX && rayResult.X <= maxX {
 			// Speed up for cases where we already encountered this voxel - reduce the amount of sampling needed
@@ -151,8 +158,7 @@ func raycastSamples(
 					shadowLoc = shadowLoc.Add(shadowVec)
 				}
 
-				// Don't flip Y when calculating shadows, as it has been pre-flipped on input.
-				shadowResult = castFpRay(object, shadowLoc, shadowLoc, shadowVec, limits, false, m.Slope, m.SlopeType).Depth
+				shadowResult = castFpRay(object, shadowLoc, shadowLoc, shadowVec, limits, m.Slope, m.SlopeType).Depth
 			}
 			setResult(&result[thisX][y][i], object.Elements[rayResult.X][rayResult.Y][rayResult.Z], lighting, rayResult.Depth, shadowResult, s.Influence, rayResult.IsRecovered, m)
 		} else if !rayResult.ApproachedBoundingBox {
