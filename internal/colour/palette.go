@@ -204,13 +204,15 @@ func (p Palette) GetLitIndexed(index byte, l float64) (idx byte) {
 	return index
 }
 
-func (p Palette) GetLitRGB(index byte, l float64, brightness float64, contrast float64, resolveSpecialColours bool, influence float64) (output RGB) {
+func (p Palette) GetLitRGB(index byte, l float64, lighting_weight float64, brightness float64, contrast float64, resolveSpecialColours bool, influence float64) (output RGB) {
 	output = p.GetRGB(index, resolveSpecialColours)
 
 	entry := p.Entries[index]
 	if resolveSpecialColours && entry.Range != nil && (entry.Range.IsPrimaryCompanyColour || entry.Range.IsSecondaryCompanyColour) {
 		l = l * p.CompanyColourLightingScale
 	}
+
+    l = (l + 1) * lighting_weight - 1
 
 	if entry.Range != nil && entry.Range.IsAnimatedLight {
 		l = 0.5
