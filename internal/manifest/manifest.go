@@ -29,7 +29,7 @@ type Sprite struct {
 	ZError               float64
 	Flip                 bool    `json:"flip"`
 	Slice                int     `json:"slice"`
-	RenderElevationAngle int     `json:"render_elevation"`
+	RenderElevationAngle float64 `json:"render_elevation"`
 	Joggle               float64 `json:"joggle"`
 }
 
@@ -38,7 +38,7 @@ type Manifest struct {
 	LightingElevation         int              `json:"lighting_elevation"`
 	LightingWeight            float64          `json:"lighting_weight"`
 	Size                      geometry.Vector3 `json:"size"`
-	RenderElevationAngle      int              `json:"render_elevation"`
+	RenderElevationAngle      float64          `json:"render_elevation"`
 	Sprites                   []Sprite         `json:"sprites"`
 	DepthInfluence            float64          `json:"depth_influence"`
 	TiledNormals              bool             `json:"tiled_normals"`
@@ -66,6 +66,7 @@ type Manifest struct {
 	NoEdgeFosterisation       bool             `json:"suppress_edge_fosterisation"`
 	SoftShadow                bool             `json:"soft_shadow"`
 	ShadowThreshold           float64          `json:"shadow_threshold"`
+	ZScale                    float64          `json:"z_scale"`
 }
 
 func FromJson(handle io.Reader) (manifest Manifest, err error) {
@@ -74,6 +75,7 @@ func FromJson(handle io.Reader) (manifest Manifest, err error) {
 	manifest.EdgeThreshold = 0.5
 	manifest.TilingMode = "normal"
 	manifest.LightingWeight = 1.0
+	manifest.ZScale = 1.0
 
 	data, err := io.ReadAll(handle)
 
@@ -88,6 +90,8 @@ func FromJson(handle io.Reader) (manifest Manifest, err error) {
 	// Convert to standard values
 	manifest.Brightness = manifest.Brightness * 65535
 	manifest.Contrast += 1.0
+
+	manifest.RenderElevationAngle = geometry.RadToDeg(math.Asin(math.Sin(geometry.DegToRad(manifest.RenderElevationAngle)) / manifest.ZScale))
 
 	// Set up sprite sizes
 	manifest.SetSpriteSizes()
@@ -116,6 +120,8 @@ func (m *Manifest) SetSpriteSizes() {
 
 		if m.Sprites[i].RenderElevationAngle == 0 {
 			m.Sprites[i].RenderElevationAngle = m.RenderElevationAngle
+		} else {
+			m.Sprites[i].RenderElevationAngle = geometry.RadToDeg(math.Asin(math.Sin(geometry.DegToRad(m.Sprites[i].RenderElevationAngle)) / m.ZScale))
 		}
 	}
 }
@@ -130,9 +136,9 @@ func getCalculatedSpriteHeight(m *Manifest, spr Sprite) (height int, delta float
 	planeXComponent := math.Abs(size.X * sin)
 	planeYComponent := math.Abs(size.Y * cos)
 
-	horizontalSize := (xComponent + yComponent) * math.Sin(geometry.DegToRad(float64(m.RenderElevationAngle)))
+	horizontalSize := (xComponent + yComponent) * math.Sin(geometry.DegToRad(float64(m.RenderElevationAngle))) * m.ZScale
 
-	ratio := (horizontalSize + size.Z) / (planeXComponent + planeYComponent)
+	ratio := (horizontalSize + size.Z*m.ZScale) / (planeXComponent + planeYComponent)
 	spriteSize := ratio * float64(spr.Width)
 
 	spriteSizeRounded := math.Ceil(spriteSize)
