@@ -115,7 +115,7 @@ func raycastSamples(
 		loc0.Z += joggle
 		loc := getIntersectionWithBounds(loc0, ray, limits)
 
-		rayResult := castFpRay(object, loc0, loc, ray, limits, spr.Flip)
+		rayResult := castFpRay(object, loc0, loc, ray, limits, spr.Flip, m.Slope, m.SlopeType)
 
 		if rayResult.HasGeometry && rayResult.X >= minX && rayResult.X <= maxX {
 			// Speed up for cases where we already encountered this voxel - reduce the amount of sampling needed
@@ -152,7 +152,7 @@ func raycastSamples(
 				}
 
 				// Don't flip Y when calculating shadows, as it has been pre-flipped on input.
-				shadowResult = castFpRay(object, shadowLoc, shadowLoc, shadowVec, limits, false).Depth
+				shadowResult = castFpRay(object, shadowLoc, shadowLoc, shadowVec, limits, false, m.Slope, m.SlopeType).Depth
 			}
 			setResult(&result[thisX][y][i], object.Elements[rayResult.X][rayResult.Y][rayResult.Z], lighting, rayResult.Depth, shadowResult, s.Influence, rayResult.IsRecovered, m)
 		} else if !rayResult.ApproachedBoundingBox {
