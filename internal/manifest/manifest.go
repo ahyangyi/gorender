@@ -67,6 +67,8 @@ type Manifest struct {
 	SoftShadow                bool             `json:"soft_shadow"`
 	ShadowThreshold           float64          `json:"shadow_threshold"`
 	ZScale                    float64          `json:"z_scale"`
+	Slope                     float64          `json:"slope"`
+	SlopeType                 int              `json:"slope_type"`
 }
 
 func FromJson(handle io.Reader) (manifest Manifest, err error) {
