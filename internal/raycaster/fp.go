@@ -7,7 +7,7 @@ import (
 )
 
 func castFpRay(object voxelobject.ProcessedVoxelObject, loc0 geometry.Vector3, loc geometry.Vector3, ray geometry.Vector3, limits geometry.Vector3, flipY bool, slope float64, slopeType int) (result RayResult) {
-	if collision, loc, approachedBB := castRayToCandidate(object, loc, ray, limits, flipY); collision {
+	if collision, loc, approachedBB := castRayToCandidate(object, loc, ray, limits, flipY, slope, slopeType); collision {
 		lx, ly, lz, isRecovered := recoverNonSurfaceVoxel(object, loc, ray, limits, flipY)
 		return RayResult{
 			X:                     lx,
