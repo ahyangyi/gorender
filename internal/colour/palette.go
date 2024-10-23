@@ -212,7 +212,7 @@ func (p Palette) GetLitRGB(index byte, l float64, lighting_weight float64, brigh
 		l = l * p.CompanyColourLightingScale
 	}
 
-    l = (l + 1) * lighting_weight - 1
+	l = (l+1)*lighting_weight - 1
 
 	if entry.Range != nil && entry.Range.IsAnimatedLight {
 		l = 0.5
