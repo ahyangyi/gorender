@@ -42,7 +42,7 @@ const normalAverageDistance = 1
 const occlusionRadius = 4
 const accessBorder = 8
 
-func GetProcessedVoxelObject(o magica.VoxelObject, pal *colour.Palette, isTiled bool, tilingMode string, hasBase bool) (p ProcessedVoxelObject) {
+func GetProcessedVoxelObject(o magica.VoxelObject, pal *colour.Palette, isTiled bool, tilingMode string, hasBase bool, slope float64, slopeType int) (p ProcessedVoxelObject) {
 	p.Size = geometry.FromGandalfPoint(o.Size)
 	p.Palette = pal
 
@@ -51,13 +51,13 @@ func GetProcessedVoxelObject(o magica.VoxelObject, pal *colour.Palette, isTiled 
 	}
 
 	p.setElements(o, isTiled, tilingMode, hasBase)
-	p.calculatePass(processFirstPassElement)
-	p.calculatePass(processSecondPassElement)
+	p.calculatePass(processFirstPassElement, slope, slopeType)
+	p.calculatePass(processSecondPassElement, slope, slopeType)
 
 	return
 }
 
-func (p *ProcessedVoxelObject) calculatePass(processor func(*ProcessedVoxelObject, int, int, int)) {
+func (p *ProcessedVoxelObject) calculatePass(processor func(*ProcessedVoxelObject, int, int, int, float64, int, geometry.Point), slope float64, slopeType int) {
 	wg := sync.WaitGroup{}
 	wg.Add(p.Size.X)
 
@@ -66,7 +66,7 @@ func (p *ProcessedVoxelObject) calculatePass(processor func(*ProcessedVoxelObjec
 		go func() {
 			for y := 0; y < p.Size.Y; y++ {
 				for z := 0; z < p.Size.Z; z++ {
-					processor(p, thisX, y, z)
+					processor(p, thisX, y, z, slope, slopeType, p.Size)
 				}
 			}
 			wg.Done()
@@ -77,18 +77,18 @@ func (p *ProcessedVoxelObject) calculatePass(processor func(*ProcessedVoxelObjec
 
 }
 
-func processFirstPassElement(p *ProcessedVoxelObject, x int, y int, z int) {
+func processFirstPassElement(p *ProcessedVoxelObject, x int, y int, z int, slope float64, slopeType int, limits geometry.Point) {
 	p.Elements[x][y][z].IsSurface = p.isSurface(x, y, z)
 	p.Elements[x][y][z].Normal = p.calculateNormal(x, y, z)
 }
 
-func processSecondPassElement(p *ProcessedVoxelObject, x int, y int, z int) {
+func processSecondPassElement(p *ProcessedVoxelObject, x int, y int, z int, slope float64, slopeType int, limits geometry.Point) {
 	// Remove process colours before doing the second pass
 	if p.Elements[x][y][z].Index != 0 && p.Palette.Entries[p.Elements[x][y][z].Index].Range.IsProcessColour {
 		p.Elements[x][y][z].Index = 0
 	}
 
-	p.Elements[x][y][z].AveragedNormal = p.getAverageNormal(x, y, z)
+	p.Elements[x][y][z].AveragedNormal = p.getAverageNormal(x, y, z, slope, slopeType, limits)
 	p.Elements[x][y][z].Occlusion = p.getOcclusion(x, y, z)
 	p.Elements[x][y][z].Detail = p.getDetail(x, y, z)
 }
@@ -272,7 +272,115 @@ func (p *ProcessedVoxelObject) getNormalAverageDistance(index byte) (distance in
 	return
 }
 
-func (p *ProcessedVoxelObject) getAverageNormal(x, y, z int) (normal geometry.Vector3) {
+func (p *ProcessedVoxelObject) applySlope(x, y, z int, normal geometry.Vector3, slope float64, slopeType int, limits geometry.Point) (newNormal geometry.Vector3) {
+	N := max(limits.X, limits.Y)
+	switch slopeType {
+	case 1:
+		if x < y {
+			normal.X += slope * normal.Z
+			normal.Y -= slope * normal.Z
+		} else if x == y {
+			normal.X += slope * normal.Z / 2
+			normal.Y -= slope * normal.Z / 2
+		}
+	case 2:
+		if x+y < N-1 {
+			normal.X += slope * normal.Z
+			normal.Y += slope * normal.Z
+		} else if x+y == N-1 {
+			normal.X += slope * normal.Z / 2
+			normal.Y += slope * normal.Z / 2
+		}
+	case 4:
+		if x > y {
+			normal.X -= slope * normal.Z
+			normal.Y += slope * normal.Z
+		} else if x == y {
+			normal.X -= slope * normal.Z / 2
+			normal.Y += slope * normal.Z / 2
+		}
+	case 8:
+		if x+y > N-1 {
+			normal.X -= slope * normal.Z
+			normal.Y -= slope * normal.Z
+		} else if x+y == N-1 {
+			normal.X -= slope * normal.Z / 2
+			normal.Y -= slope * normal.Z / 2
+		}
+	case 5:
+		if x < y {
+			normal.X += slope * normal.Z
+			normal.Y -= slope * normal.Z
+		} else if x > y {
+			normal.X -= slope * normal.Z
+			normal.Y += slope * normal.Z
+		}
+	case 10:
+		if x+y < N-1 {
+			normal.X += slope * normal.Z
+			normal.Y += slope * normal.Z
+		} else if x+y > N-1 {
+			normal.X -= slope * normal.Z
+			normal.Y -= slope * normal.Z
+		}
+
+	case 3:
+		normal.X += slope * normal.Z
+	case 6:
+		normal.Y += slope * normal.Z
+	case 9:
+		normal.Y -= slope * normal.Z
+	case 12:
+		normal.X -= slope * normal.Z
+	case 7:
+		if x+y > N-1 {
+			normal.X += slope * normal.Z
+			normal.Y += slope * normal.Z
+		} else if x+y == N-1 {
+			normal.X += slope * normal.Z / 2
+			normal.Y += slope * normal.Z / 2
+		}
+	case 11:
+		if x > y {
+			normal.X += slope * normal.Z
+			normal.Y -= slope * normal.Z
+		} else if x == y {
+			normal.X += slope * normal.Z / 2
+			normal.Y -= slope * normal.Z / 2
+		}
+	case 13:
+		if x+y < N-1 {
+			normal.X -= slope * normal.Z
+			normal.Y -= slope * normal.Z
+		} else if x+y == N-1 {
+			normal.X -= slope * normal.Z / 2
+			normal.Y -= slope * normal.Z / 2
+		}
+	case 14:
+		if x < y {
+			normal.X -= slope * normal.Z
+			normal.Y += slope * normal.Z
+		} else if x == y {
+			normal.X -= slope * normal.Z / 2
+			normal.Y += slope * normal.Z / 2
+		}
+	case 23:
+		normal.X += slope * normal.Z
+		normal.Y += slope * normal.Z
+	case 27:
+		normal.X += slope * normal.Z
+		normal.Y -= slope * normal.Z
+	case 29:
+		normal.X -= slope * normal.Z
+		normal.Y -= slope * normal.Z
+	case 30:
+		normal.X -= slope * normal.Z
+		normal.Y += slope * normal.Z
+	}
+	return normal.Normalise()
+}
+
+func (p *ProcessedVoxelObject) getAverageNormal(x, y, z int, slope float64, slopeType int, limits geometry.Point) (normal geometry.Vector3) {
 	if !p.Elements[x][y][z].IsSurface {
 		return
 	}
@@ -299,10 +407,10 @@ func (p *ProcessedVoxelObject) getAverageNormal(x, y, z int) (normal geometry.Ve
 	}
 
 	if normal.Length() < 0.01 {
-		return p.Elements[x][y][z].Normal
+		return p.applySlope(x, y, z, p.Elements[x][y][z].Normal, slope, slopeType, limits)
 	}
 
-	return normal.Normalise()
+	return p.applySlope(x, y, z, normal.Normalise(), slope, slopeType, limits)
 }
 
 func (p *ProcessedVoxelObject) getOcclusion(x, y, z int) (occlusion int) {

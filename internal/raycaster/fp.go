@@ -6,8 +6,8 @@ import (
 	"math"
 )
 
-func castFpRay(object voxelobject.ProcessedVoxelObject, loc0 geometry.Vector3, loc geometry.Vector3, ray geometry.Vector3, limits geometry.Vector3, flipY bool) (result RayResult) {
-	if collision, loc, approachedBB := castRayToCandidate(object, loc, ray, limits, flipY); collision {
+func castFpRay(object voxelobject.ProcessedVoxelObject, loc0 geometry.Vector3, loc geometry.Vector3, ray geometry.Vector3, limits geometry.Vector3, flipY bool, slope float64, slopeType int) (result RayResult) {
+	if collision, loc, approachedBB := castRayToCandidate(object, loc, ray, limits, flipY, slope, slopeType); collision {
 		lx, ly, lz, isRecovered := recoverNonSurfaceVoxel(object, loc, ray, limits, flipY)
 		return RayResult{
 			X:                     lx,
@@ -25,30 +25,32 @@ func castFpRay(object voxelobject.ProcessedVoxelObject, loc0 geometry.Vector3, l
 	return
 }
 
-func castRayToCandidate(object voxelobject.ProcessedVoxelObject, loc geometry.Vector3, ray geometry.Vector3, limits geometry.Vector3, flipY bool) (bool, geometry.Vector3, bool) {
+func castRayToCandidate(object voxelobject.ProcessedVoxelObject, loc geometry.Vector3, ray geometry.Vector3, limits geometry.Vector3, flipY bool, slope float64, slopeType int) (bool, geometry.Vector3, bool) {
 	i, fi := 0, 0.0
 	bSizeY := object.Size.Y - 1
 	loc0 := loc
 	approachedBB := false
 
 	for {
+		loc2 := getWarpedLocation(loc, slope, slopeType, limits)
 		// CanTerminate is an expensive check but we don't need to run it every cycle
-		if i%4 == 0 && canTerminateRay(loc, ray, limits) {
+		if i%4 == 0 && canTerminateRay(loc2, ray, limits) {
 			break
 		}
 
-		if isInsideBoundingVolume(loc, limits) {
+		if isInsideBoundingVolume(loc2, limits) {
 			approachedBB = true
-			lx, ly, lz := int(loc.X), int(loc.Y), int(loc.Z)
+
+			lx, ly, lz := int(loc2.X), int(loc2.Y), int(loc2.Z)
 
 			if flipY {
 				ly = bSizeY - ly
 			}
 
 			if object.Elements[lx][ly][lz].Index != 0 {
-				return true, loc, approachedBB
+				return true, loc2, approachedBB
 			}
-		} else if !approachedBB && isNearlyInsideBoundingVolume(loc, limits) {
+		} else if !approachedBB && isNearlyInsideBoundingVolume(loc2, limits) {
 			approachedBB = true
 		}
 
@@ -58,6 +60,66 @@ func castRayToCandidate(object voxelobject.ProcessedVoxelObject, loc geometry.Ve
 	}
 
 	return false, geometry.Vector3{}, approachedBB
+}
+
+func getWarpedLocation(loc geometry.Vector3, slope float64, slopeType int, limits geometry.Vector3) geometry.Vector3 {
+	N := min(limits.X, limits.Y)
+
+	switch slopeType {
+	case 1:
+		if loc.X < loc.Y {
+			loc.Z -= (loc.Y - loc.X) * slope
+		}
+	case 2:
+		if loc.X+loc.Y < N {
+			loc.Z -= (N - loc.X - loc.Y) * slope
+		}
+	case 4:
+		if loc.X > loc.Y {
+			loc.Z -= (loc.X - loc.Y) * slope
+		}
+	case 8:
+		if loc.X+loc.Y > N {
+			loc.Z -= (loc.X + loc.Y - N) * slope
+		}
+	case 5:
+		if loc.X < loc.Y {
+			loc.Z -= (loc.Y - loc.X) * slope
+		} else if loc.X > loc.Y {
+			loc.Z -= (loc.X - loc.Y) * slope
+		}
+	case 10:
+		if loc.X+loc.Y < N {
+			loc.Z -= (N - loc.X - loc.Y) * slope
+		} else if loc.X+loc.Y > N {
+			loc.Z -= (loc.X + loc.Y - N) * slope
+		}
+	case 3:
+		loc.Z -= (N - loc.X) * slope
+	case 6:
+		loc.Z -= (N - loc.Y) * slope
+	case 9:
+		loc.Z -= loc.Y * slope
+	case 12:
+		loc.Z -= loc.X * slope
+	case 7:
+		loc.Z -= min(N*2-loc.X-loc.Y, N) * slope
+	case 11:
+		loc.Z -= min(N-loc.X+loc.Y, N) * slope
+	case 13:
+		loc.Z -= min(loc.X+loc.Y, N) * slope
+	case 14:
+		loc.Z -= min(loc.X+N-loc.Y, N) * slope
+	case 23:
+		loc.Z -= (N*2 - loc.X - loc.Y) * slope
+	case 27:
+		loc.Z -= (N - loc.X + loc.Y) * slope
+	case 29:
+		loc.Z -= (loc.X + loc.Y) * slope
+	case 30:
+		loc.Z -= (loc.X + N - loc.Y) * slope
+	}
+	return loc
 }
 
 // Attempt to recover a non-surface voxel by taking a more DDA-like approach where we trace backward up the ray
