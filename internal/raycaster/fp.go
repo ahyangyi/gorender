@@ -154,27 +154,33 @@ func getIntersectionWithBounds(loc, ray, limits geometry.Vector3) geometry.Vecto
 		return loc
 	}
 
-	loc = loc.Add(getIntersectionVector(ray.X, loc.X, limits.X, ray))
-	loc = loc.Add(getIntersectionVector(ray.Y, loc.Y, limits.Y, ray))
+	xdist := getIntersectionDistance(ray.X, loc.X, limits.X)
+	ydist := getIntersectionDistance(ray.Y, loc.Y, limits.Y)
+	if ydist == 0 || xdist != 0 && xdist < ydist {
+		loc = loc.Add(ray.MultiplyByConstant(xdist))
+	} else {
+		loc = loc.Add(ray.MultiplyByConstant(ydist))
+	}
 
 	return loc
 }
 
-func getIntersectionVector(rayDimension, locDimension, limitDimension float64, ray geometry.Vector3) geometry.Vector3 {
+func getIntersectionDistance(rayDimension, locDimension, limitDimension float64) float64 {
 	dist := -1.0
 
 	if rayDimension > 0.1 {
-		dist = -locDimension
-	}
-	if rayDimension < -0.1 {
-		dist = limitDimension - locDimension
+		dist = -locDimension / rayDimension
+	} else if rayDimension < -0.1 {
+		dist = (limitDimension - locDimension) / rayDimension
+	} else {
+		return 0.0
 	}
 
 	if dist > 0 {
-		return ray.MultiplyByConstant(dist / rayDimension)
+		return dist
 	}
 
-	return geometry.Zero()
+	return 0.0
 }
 
 func isNearlyInsideBoundingVolume(loc geometry.Vector3, limits geometry.Vector3) bool {
