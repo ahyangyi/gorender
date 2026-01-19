@@ -104,7 +104,7 @@ func processFile(inputFilename string) {
 
 	// Check if there are files to output
 	for _, scale := range splitScales {
-		exist, err := allPotentialOutputFilesExist(inputFilename, scale, numScales)
+		exist, err := allPotentialOutputFilesExist(inputFilename, scale, numScales, flags.ManifestFilename)
 
 		if err != nil {
 			fmt.Printf("error attempting to stat files: %v", err)
@@ -177,7 +177,7 @@ func processFile(inputFilename string) {
 
 }
 
-func allPotentialOutputFilesExist(inputFilename string, scale string, numScales int) (bool, error) {
+func allPotentialOutputFilesExist(inputFilename string, scale string, numScales int, manifestFilepath string) (bool, error) {
 	// Always overwrite files if the flag is set
 	if flags.Overwrite {
 		return false, nil
@@ -190,13 +190,23 @@ func allPotentialOutputFilesExist(inputFilename string, scale string, numScales 
 		return false, err
 	}
 
+	manifestFileStats, err := os.Stat(manifestFilepath)
+	if err != nil {
+		return false, err
+	}
+
 	check := []string{"8bpp"}
 	if !flags.Output8bppOnly {
 		check = []string{"8bpp", "32bpp", "mask"}
 	}
 
+	modTime := inputFileStats.ModTime()
+	if manifestFileStats.ModTime().After(modTime) {
+		modTime = manifestFileStats.ModTime()
+	}
+
 	for _, f := range check {
-		newer, err := fileIsNewerThanDate(outputFilename+"_"+f+".png", inputFileStats.ModTime())
+		newer, err := fileIsNewerThanDate(outputFilename+"_"+f+".png", modTime)
 		if err != nil {
 			return false, err
 		}
@@ -204,7 +214,6 @@ func allPotentialOutputFilesExist(inputFilename string, scale string, numScales 
 		if !newer {
 			return false, nil
 		}
-
 	}
 
 	return true, nil
