@@ -18,3 +18,7 @@ func (a Plane) BiLerpWithinPlane(u float64, v float64) Vector3 {
 func DegToRad(angle float64) float64 {
 	return (angle / 180.0) * math.Pi
 }
+
+func RadToDeg(angle float64) float64 {
+	return angle * 180.0 / math.Pi
+}
